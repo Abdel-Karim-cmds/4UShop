@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+    <link rel="stylesheet" href="css/Home.css">
+    <style>
+
+        .toggle-btn{
+            display: none;
+            text-align: center;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* Styles for small devices */
+        @media only screen and (max-width: 600px) {
+            #cssmenu ul {
+                display: none;
+            }
+
+            #cssmenu.collapsed ul {
+                display: block;
+                text-align: center;
+            }
+
+            #cssmenu.collapsed ul li {
+                display: block;
+                width: 100%;
+                border-bottom: 1px solid #fff;
+            }
+
+            #cssmenu.collapsed ul li:last-child {
+                border-bottom: none;
+            }
+
+            #cssmenu.collapsed ul li a {
+                text-align: center;
+            }
+
+            #cssmenu.collapsed .toggle-btn {
+                display: block;
+                text-align: center;
+                background-color: #333;
+                color: #fff;
+                padding: 10px;
+                cursor: pointer;
+            }
+        }
+    </style>
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById("cssmenu");
+            menu.classList.toggle("collapsed");
+        }
+    </script>
+</head>
+
+<body>
+    <div id='cssmenu'>
+    <div class="toggle-btn" onclick="toggleMenu()">Menu</div>
+        <ul>
+            <li class='active'><a href='/'> <i class="fa fa-home" aria-hidden="true"></i> Acceuil</a></li>
+            <li class='has-sub'><a href='#'> <i class="fa fa-tag" aria-hidden="true"></i> Nos Produits</a>
+                <ul>
+                    <li class='has-sub '><a href='#'>Vetements</a>
+                    </li>
+                    <li class='has-sub '><a href='#'>Accessoires</a>
+                    </li>
+                    <li class="has-sub"><a href="#">Divers</a></li>
+                    <li class="has-sub"><a href="#">Alimentations</a></li>
+                </ul>
+            </li>
+            <li class="has-sub"><a href='#'> <i class="fa fa-question" aria-hidden="true"></i> Vos Preocupations</a>
+                <ul>
+                    <li><a href="#">Livraison</a></li>
+                    <li><a href="#">Politique de retour</a></li>
+                    <li><a href="#">Notice Legale</a></li>
+                    <li><a href="#">Termes et conditions</a></li>
+                    <li><a href="#">A propos de nous</a></li>
+                </ul>
+            </li>
+            <li><a href='#'> <i class="fa fa-comment" aria-hidden="true"></i> Nous contacter</a>
+                <ul>
+                    <li><a href="mailto:someone@gmail.com"> <i class="fa fa-envelope" aria-hidden="true"></i>
+                            someone@gmail.com</a></li>
+                    <li><a href="tel:+254741136714"> <i class="fa fa-phone" aria-hidden="true"></i> +254741136714</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href='#'> <i class="fa fa-user" aria-hidden="true"></i> Bdak</a>
+                <ul>
+                    <li>
+                        <a href="#">
+                            <i class="fa fa-power-off" aria-hidden="true"></i> Se connecter
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fa fa-id-badge" aria-hidden="true"></i> Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tel:+254741136714">
+                            <i class="fa fa-power-off" aria-hidden="true"></i> Se Deconnecter
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</body>
+
+</html>
