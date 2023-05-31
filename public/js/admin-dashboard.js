@@ -1,6 +1,3 @@
-const path = window.location.href.split('/')
-const table = path[path.length - 1]
-console.log(path)
 
 
 $("#menu-toggle").click(function (e) {
@@ -74,47 +71,3 @@ $(document).ready(function () {
 //       reader.readAsDataURL(input.files[0]);
 //    }
 // }
-
-
-const uploadForm = document.getElementById('new-product-form');
-const uploadInput = document.getElementById('product_images');
-const uploadInput2 = document.getElementById('product_images2');
-const textInputs = document.querySelectorAll('.text-input');
-
-uploadForm.addEventListener('submit', (event) => {
-   event.preventDefault();
-   const formData = new FormData();
-   const files = uploadInput.files;
-   const files2 = uploadInput.files;
-   console.log(files)
-   console.log(textInputs)
-
-   for (let i = 0; i < files.length; i++) {
-      formData.append('images', files[i]);
-   }
-   for (let i = 0; i < files.length; i++) {
-      formData.append('images2', files[i]);
-   }
-
-   textInputs.forEach((input) => {
-      formData.append(input.name,input.value)
-   });
-
-
-   console.log(formData)
-   fetch(`/upload-file?table=${table}`, {
-      method: 'POST',
-      body: formData
-   })
-      .then((response) => {
-         if (response.ok) {
-            console.log('Files uploaded successfully.');
-         } else {
-            console.error('Error uploading files.');
-         }
-      })
-      .catch((error) => {
-         console.error('Error uploading files:', error);
-      });
-});
-

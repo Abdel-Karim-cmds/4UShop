@@ -116,8 +116,8 @@ app.get('/admin-dashboard', isAdmin,(request,response)=>{
     response.render('Admin dashboard')
 })
 
-//Products route
-app.get('/products/:item',(request,response)=>{
+//Products route for admin
+app.get('/admin-dashboard/products/:item',isAdmin,(request,response)=>{
     response.render('Admin Product')
 })
 
@@ -157,47 +157,135 @@ app.post('/admin-signin',(request,response)=>{
 
 
 //Upload image
-app.post('/upload-file', upload.fields([
-    {
-        name:"images"},
-    {
-        name:"images2"
-    }
-]), async (request, response) => {
-    // app.post('/upload-file', upload.array("images"), async (request, response) => {
-    console.log(request.files)
-    log(request.body)
-    log(request.query)
-    const {table} = request.query
-    // log(request.headers.)
-    try {
-        const dateTime = giveCurrentDateTime();
+// app.post('/upload-file', upload.fields([
+//     {
+//         name:"images"
+//     },
+//     {
+//         name:"images2"
+//     }
+// ]), async (request, response) => {
+app.post('/upload-file', upload.array("images"), async (request, response) => {
+// app.post('/upload-file', upload.single(), async (request, response) => {
+    // app.post('/upload-file', upload.any(), async (request, response) => {
+    // return response.status(409).json({
+    //     message:'Product already exists'
+    // })
+    // log("**********************")
+    // log(request.body)
+    // log(request.query)
+    // log(request.files)
+    // log("**********************")
 
-        const storageRef = ref(storage, `${table}/${request.file.originalname + "       " + dateTime}`);
+    const {color_code,color_name,price_obj} = request.body
+    const {table,product_price,product_name,product_description} = request.query
 
-        // Create file metadata including the content type
-        const metadata = {
-            contentType: request.file.mimetype,
-        };
+    // const docRef = db.collection(table).doc(product_name)
+    // const doc = await docRef.get();
 
-        // Upload the file in the bucket storage
-        const snapshot = await uploadBytesResumable(storageRef, request.file.buffer, metadata);
-        //by using uploadBytesResumable we can control the progress of uploading like pause, resume, cancel
+    // log(doc.data())
 
-        // Grab the public url
-        const downloadURL = await getDownloadURL(snapshot.ref);
 
-        console.log('File successfully uploaded.');
-        return response.send({
-            message: 'file uploaded to firebase storage',
-            name: request.file.originalname,
-            type: request.file.mimetype,
-            downloadURL: downloadURL
+    
+// Specify the document path and collection name
+    // const documentPath = 'vetements/Beluga';
+    const documentPath = `${table}/${product_name}`
+    const collectionName = table;
+
+    // Retrieve all the subcollections within the document
+    const documentRef = db.doc(documentPath);
+    const collectionsSnapshot = await documentRef.listCollections();
+
+    // Iterate over the collections and retrieve their IDs
+    const collectionIds = collectionsSnapshot.map((collection) => collection.id);
+
+    // Log the collection IDs
+    // console.log(collectionIds);
+    
+    // const subcollections = collectionIds[1]
+
+    const details = [
+        
+    ]
+
+    const sizes = []
+
+    collectionIds.forEach(async element => {
+        let sizesObj = {}
+        // log(element)
+        const docRef = db.collection(table).doc(product_name).collection(element).get()
+        .then( async snapshots =>{
+            snapshots.forEach(snapshot => {
+                log(snapshot.id)
+                log(snapshot.Name)
+                sizesObj = {
+                    ...sizesObj,
+                    [element]:snapshot.data()
+                }
+                // log(element.data())
+            });
+            sizes.push(sizesObj)
         })
-    } catch (error) {
-        // return res.status(400).send(error.message)
-        console.log(error)
-    }
+        .catch(error =>{
+            log(error)
+        })
+        
+        // const doc = await docRef.get();
+
+        // log(await docRef)
+        // log(doc.data())
+        // log(sizesObj)
+    });
+
+
+    // if (!doc.exists) {
+    //     console.log('No such document!');
+    //     return response.status(200).json({
+    //         message: 'Product does not exist'
+    //     })
+    // } else {
+    //     console.log('Document data:', doc.data());
+    //     return response.status(409).json({
+    //         message: 'Product Already exists'
+    //     })
+    // }
+
+    // return response.status(200).json({
+    //     message:'Successful insertion'
+    // })
+
+    // console.log(request.files)
+    // const files = request.files
+    // log(request.body)
+    // log(request.query)
+    // const {table} = request.query
+
+    // const {colors, product_name, product_price, product_description,color_names} = request.body
+
+    // log(colors)
+    // log(colors.length)
+    // const docRef = db.collection(table).doc(product_name)
+    // const doc = await docRef.get();
+    // if (!doc.exists) {
+    //     console.log('No such document!');
+    // } else {
+    //     // console.log('Document data:', doc.data());
+    //     response.status(409).json({
+    //         message: 'Product Already exists'
+    //     })
+    // }
+    // for (let i = 0; i < colors.length; i++) {
+    //     const color = colors[i];
+    //     const col_names = color_names[i] 
+    //     // log(color)
+
+    //     const imageSet = files.filter(image => image.fieldname == `images${i}`)
+    //     // log(imageSet)
+    //     handleUpload(table,product_name,imageSet,color,col_names,product_description,product_price)
+        
+    // }
+    // log(request.headers.)
+    
 })
 
 //PUT METHODS
@@ -213,6 +301,70 @@ const giveCurrentDateTime = () => {
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     const dateTime = date + ' ' + time;
     return dateTime;
+}
+
+async function handleUpload(table,name,images,color_code,color_name,description,price){
+    // log("***************")
+    // console.error(images)
+    // log("***************")
+    // log(color)
+    let docRef = db.collection(table).doc(name)
+    docRef.set({
+        "description":description,
+        "price": price
+    })
+    // let docRef
+    const myPics = []
+    for(let i = 0; i<images.length;i++){
+        myPics.push(await uploadImage(table,name,images[i].buffer,images[i].mimetype,images[i].originalname))
+    }
+
+    const title = `${color_code} - ${color_name}`
+
+    await docRef.update({
+        [title]: admin.firestore.FieldValue.arrayUnion(...myPics),
+      });
+
+}
+
+async function uploadImage(table,name,buffer,mimetype,originalname){
+    try {
+
+        console.log("Table is " + table)
+        console.log("Name is " + name)
+
+        const dateTime = giveCurrentDateTime();
+
+        // const storageRef2 = ref(storage, `${table}/something/${name + "       " + dateTime}`);
+        const storageRef = ref(storage, `${table}/${name}/${originalname + "    " + dateTime}`)
+
+        // Create file metadata including the content type
+        const metadata = {
+            contentType: mimetype,
+        };
+
+        // Upload the file in the bucket storage
+        const snapshot = await uploadBytesResumable(storageRef, buffer, metadata);
+        //by using uploadBytesResumable we can control the progress of uploading like pause, resume, cancel
+
+        // Grab the public url
+        const downloadURL = await getDownloadURL(snapshot.ref);
+
+        // console.log('File successfully uploaded.');
+        // log("************")
+        // console.log(downloadURL);
+        // log("************")
+        return downloadURL
+        // return response.send({
+        //     message: 'file uploaded to firebase storage',
+        //     name: request.file.originalname,
+        //     type: request.file.mimetype,
+        //     downloadURL: downloadURL
+        // })
+    } catch (error) {
+        // return res.status(400).send(error.message)
+        console.log(error)
+    }
 }
 
 app.listen(port, ()=> console.log(`Server is listenning on port ${port}`))
