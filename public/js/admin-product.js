@@ -180,7 +180,7 @@ uploadForm.addEventListener('submit', async e => {
 
         const request = await fetch(`/upload-file?table=${table}&product_price=${product_price}&product_name=${product_name}&product_description=${product_description}`, { method: 'POST', body: formData })
         
-       const response = await request.json()
+    //    const response = await request.json()
 
        if(request.status === 200)
         createNotification(response.message,'success')
