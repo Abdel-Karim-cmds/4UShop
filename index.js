@@ -116,13 +116,81 @@ app.get('/admin-dashboard', isAdmin, (request, response) => {
     response.render('Admin dashboard')
 })
 
-//Products route for admin
-app.get('/admin-dashboard/products/:item', isAdmin, (request, response) => {
-    response.render('Admin Product')
+//Products vetements route for admin
+app.get('/admin-dashboard/products/vetements', isAdmin, (request, response) => {
+    response.render('Admin Product vetements')
 })
 
+//Products divers route for admin
+app.get('/admin-dashboard/products/divers', isAdmin, (request, response) => {
+    response.render('Admin Product vetements')
+})
+
+
+//Products Accessoire route for admin
+app.get('/admin-dashboard/products/accessoire', isAdmin, (request, response) => {
+    response.render('Admin Product Alimentation')
+})
+
+
+//Products divers route for admin
+app.get('/admin-dashboard/products/alimentation', isAdmin, (request, response) => {
+    response.render('Admin Product Alimentation')
+})
+
+//Admi order route
 app.get('/admin-dashboard/orders', isAdmin, (request, response) => {
     response.render('Admin orders')
+})
+
+//Send list of product category
+app.get('/get-products',async (request,response) =>{
+    log(request.query)
+    const {table} = request.query
+    // const docRef = db.collection(table)
+    // const doc = await docRef.get()
+    // response.send(doc)
+
+    let allProducts = []
+    db.collection(table).get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            // log(doc.id)
+            // log(doc.data())
+            const newObj = {
+                ...doc.data(),
+                Name:doc.id
+            }
+            // doc.data() = {
+            //     ...doc.data(),
+            //     Name:doc.data()
+            // }
+            allProducts.push(newObj)
+        });
+        response.send(allProducts)
+    });
+})
+
+//Admin product details
+app.get('/admin-dashboard/products/:table/:item',(request,response) =>{
+    response.render('Admin Product details')
+})
+
+//Sending details about a specific product
+app.get('/get-item', async (request,response) =>{
+    log(request.query)
+    const {table,item} = request.query
+
+    db.collection(table).get().then( querySnapshot =>{
+        querySnapshot.forEach( doc =>{
+            if(doc.id == item){
+                const newObj = {
+                    ...doc.data(),
+                    Name:doc.id
+                }
+                response.send(newObj)
+            }
+        })
+    })
 })
 
 //Logout
@@ -158,16 +226,6 @@ app.post('/admin-signin', (request, response) => {
     }
 })
 
-
-//Upload image
-// app.post('/upload-file', upload.fields([
-//     {
-//         name:"images"
-//     },
-//     {
-//         name:"images2"
-//     }
-// ]), async (request, response) => {
 app.post('/upload-file', upload.array("images"), async (request, response) => {
     const received_pics = request.files
 
@@ -179,13 +237,13 @@ app.post('/upload-file', upload.array("images"), async (request, response) => {
     const docRef = db.collection(table).doc(product_name)
     const doc = await docRef.get()
 
-    if (doc.exists) {
-        console.log("product already exists")
-        return response.status(409).json({
-            message: 'Product Already exists'
-        })
-    }
-    else {
+    // if (doc.exists) {
+    //     console.log("product already exists")
+    //     return response.status(409).json({
+    //         message: 'Product Already exists'
+    //     })
+    // }
+    // else {
         const pictures = received_pics.map(async picture => await uploadImage(table, product_name, color_name, picture.buffer, picture.mimetype, picture.originalname))
 
         const picLoop = async () => {
@@ -199,29 +257,29 @@ app.post('/upload-file', upload.array("images"), async (request, response) => {
         await docRef.update({
             'Base_price': product_price,
             'Description': product_description,
-            [color_name]:
-            {
+            'Sizes':admin.firestore.FieldValue.arrayUnion({
+                Color_name:color_name,    
                 Color: color_code,
                 Price: prices,
                 Pictures: await picLoop()
-            }
+            })
         })
 
         .catch(async error => {
-            log("YO")
+            // log("YO")
+            // log(error)
             await docRef.set({
                 'Base_price': product_price,
                 'Description': product_description,
-                [color_name]:
-                {
+                'Sizes':admin.firestore.FieldValue.arrayUnion({
+                    Color_name: color_name,
                     Color: color_code,
                     Price: prices,
                     Pictures: await picLoop()
-                }
-
+                })
             })
         })
-    }
+    // }
     
     return response.status(200).json({
         message: 'Successful insertion'

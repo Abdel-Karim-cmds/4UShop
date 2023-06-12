@@ -37,74 +37,8 @@ $(document).ready(function () {
 });
 
 
-
+// Section for Vetements page
 const uploadForm = document.getElementById('new-product-form');
-// const uploadInput = document.querySelectorAll('.upload-input');
-const uploadInput = document.getElementById('product_images');
-// const uploadInput2 = document.getElementById('product_images2');
-const textInputs = document.querySelectorAll('.text-input');
-// const colors = document.querySelectorAll('input[type=color]')
-// const colorInputs = document.querySelectorAll('input[type="color"]');
-// const colorInputs = document.querySelectorAll('.color-input');
-
-
-// uploadForm.addEventListener('submit', (event) => {
-//    event.preventDefault();
-//    console.log(textInputs)
-//    // console.error(colorInputs)
-//    console.log(document.getElementById('color0'))
-//    const formData = new FormData();
-//    console.log(textInputs)
-//    const num = document.getElementById('colorNum').value
-//    console.log(num)
-
-//    for (let i = 0; i < num; i++) {
-//       const uploadInput = document.getElementById(`product_image${i}`)
-//       const files = uploadInput.files;
-//       for (let j = 0; j < files.length; j++) {
-//          formData.append(`images${i}`, files[j]);
-//       }
-//    }
-
-//    //Getting the color code
-//    for (let i = 0; i < num; i++) {
-//       const color = document.getElementById(`color${i}`)
-//       const colorValue = color.value
-//       // colors.push(colorValue)
-//       formData.append("colors", colorValue)
-//    }
-
-//    //Getting the color name
-//    for (let i = 0; i < num; i++) {
-//       const color = document.getElementById(`color_name${i}`)
-//       const colorValue = color.value
-//       // colors.push(colorValue)
-//       formData.append("color_names", colorValue)
-//    }
-
-
-//    textInputs.forEach((input) => {
-//       formData.append(input.name, input.value)
-//    });
-
-
-//    console.log(formData)
-//    fetch(`/upload-file?table=${table}`, {
-//       method: 'POST',
-//       body: formData
-//    })
-//       .then((response) => {
-//          if (response.ok) {
-//             console.log('Files uploaded successfully.');
-//          } else {
-//             console.error('Error uploading files.');
-//          }
-//       })
-//       .catch((error) => {
-//          console.error('Error uploading files:', error);
-//       });
-// });
-
 uploadForm.addEventListener('submit', async e => {
     e.preventDefault()
     console.log("Yo")
@@ -117,39 +51,20 @@ uploadForm.addEventListener('submit', async e => {
 
     const product_description = document.getElementById('product_description').value
 
+    const progressBar = document.getElementsByClassName('progress-bar')[0]
+
     for (let i = 0; i < product_group.length; i++) {
         const element = product_group[i];
-        
+
         const formData = new FormData()
-        // console.log(element.childNodes)
-        // console.log(element.childNodes[0].files)
-        const images = element.childNodes[0].files
-        console.error(images)
+        // const images = element.childNodes[0].files
 
-        //   images.forEach(image => {
-        //     formData.append('image',image)
-        //   });
-
-        // Object.entries(images).forEach(
-        //     ([key, value]) => {
-        //         console.log(value)
-        //         formData.append('images', value)
-        //     }
-        // );
-
-        
-        
-        
         const uploadInput = document.getElementById(`product_image${i}`)
-        // console.error(uploadInput)
         const files = uploadInput.files;
-        // console.error(files)
         for (let j = 0; j < files.length; j++) {
-            console.error(files[j])
+            // console.error(files[j])
             formData.append('images', files[j]);
         }
-
-
 
         // console.log(element.childNodes[1].value)
         const color_code = element.childNodes[1].value
@@ -163,90 +78,55 @@ uploadForm.addEventListener('submit', async e => {
         const sizes = element.childNodes[4].childNodes[1].childNodes
 
         let priceObj = {}
-        for (let i = 1; i < sizes.length; i = i + 4) {
+        for (let i = 1; i < sizes.length; i = i + 6) {
             const element = sizes[i];
             console.log(element)
             priceObj = {
                 ...priceObj,
-                [sizes[i].value]: sizes[i + 2].value
+                // [sizes[i].value]: sizes[i + 2].value,
+                // Stock: sizes[i+4].value
+                [sizes[i].value]: [
+                    {
+                        price: sizes[i+2].value,
+                        stock: sizes[i+4].value
+                    }
+                ]
             }
         }
+        
+        console.error(sizes)
+        console.log("***********************")
+        console.error(priceObj)
+        console.log("***********************")
 
         formData.append('price_obj', JSON.stringify(priceObj))
 
-        console.log(priceObj)
-
-        console.log(priceObj)
-
-        const request = await fetch(`/upload-file?table=${table}&product_price=${product_price}&product_name=${product_name}&product_description=${product_description}`, { method: 'POST', body: formData })
+        // const request = await fetch(`/upload-file?table=${table}&product_price=${product_price}&product_name=${product_name}&product_description=${product_description}`, { method: 'POST', body: formData })
+        progressBar.style.display = 'block'
+        const request = await fetch(`/upload-file?product_price=${product_price}&product_name=${product_name}&product_description=${product_description}&table=${table}`, { method: 'POST', body: formData })
+        .catch(err =>{
+            createNotification('oops... Something went wrong','error')
+        })
+        const response = await request.json()
         
-    //    const response = await request.json()
 
-       if(request.status === 200)
-        createNotification(response.message,'success')
-       else
-        createNotification(response.message,'error')
+        if (request.status === 200) {
+            createNotification(response.message, 'success')
 
-        
+
+            const width = ((i + 1) / product_group.length) * 100
+            progressBar.style.setProperty('--width', width)
+            if(width === 100){
+                progressBar.style.display = 'none'
+                getData()
+            }
+        }
+        else {
+            createNotification(response.message, 'error')
+            break
+        }
+
     }
-
-    // product_group.forEach(async element => {
-
-    //     const formData = new FormData()
-    //     // console.log(element.childNodes)
-    //     // console.log(element.childNodes[0].files)
-    //     const images = element.childNodes[0].files
-    //     console.error(images)
-
-    //     //   images.forEach(image => {
-    //     //     formData.append('image',image)
-    //     //   });
-
-    //     Object.entries(images).forEach(
-    //         ([key, value]) => {
-    //             console.log(value)
-    //             formData.append('images', value)
-    //         }
-    //     );
-
-    //     // console.log(element.childNodes[1].value)
-    //     const color_code = element.childNodes[1].value
-
-    //     formData.append('color_code', color_code)
-
-    //     // console.log(element.childNodes[2].value)
-    //     const color_name = element.childNodes[2].value
-    //     formData.append('color_name', color_name)
-    //     // console.log(element.childNodes[4].childNodes[1].childNodes)
-    //     const sizes = element.childNodes[4].childNodes[1].childNodes
-
-    //     let priceObj = {}
-    //     for (let i = 1; i < sizes.length; i = i + 4) {
-    //         const element = sizes[i];
-    //         console.log(element)
-    //         priceObj = {
-    //             ...priceObj,
-    //             [sizes[i].value]: sizes[i + 2].value
-    //         }
-    //     }
-
-    //     formData.append('price_obj', JSON.stringify(priceObj))
-
-    //     console.log(priceObj)
-
-    //     console.log(priceObj)
-
-    //     const request = await fetch(`/upload-file?table=${table}&product_price=${product_price}&product_name=${product_name}&product_description=${product_description}`, { method: 'POST', body: formData })
-    // })
-
-
-    //    const response = await request.json()
-
-    //    if(request.status === 200)
-    //     createNotification(response.message,'success')
-    //    else
-    //     createNotification(response.message,'error')
-
 })
 
 
@@ -257,8 +137,8 @@ document.getElementById('colorNum').addEventListener('change', e => {
 })
 
 function makeSizes(node, size) {
-    console.log(node)
-    console.log(size)
+    // console.log(node)
+    // console.log(size)
     node.innerHTML = ''
     const br = document.createElement('br')
     const div = document.createElement('div')
@@ -285,12 +165,28 @@ function makeSizes(node, size) {
         sizePrice.id = `sizePrice${i}`
         sizePrice.placeholder = "Prix"
 
+        
+        const stockLabel = document.createElement('label')
+        stockLabel.innerText = 'Nombre en stock'
+
+
+        const stock = document.createElement('input')
+        stock.type = 'number'
+        stock.name = `stock${i}`
+        stock.id = `stock${i}`
+        stock.placeholder = 'Nombre en stock'
+
         node.appendChild(sizeNameLabel)
         node.appendChild(br)
         node.appendChild(sizeName)
         node.appendChild(br)
         node.appendChild(sizePriceLabel)
+        node.appendChild(br)
         node.appendChild(sizePrice)
+        node.appendChild(br)
+        node.appendChild(stockLabel)
+        node.appendChild(br)
+        node.appendChild(stock)
         node.appendChild(br)
     }
 
@@ -333,13 +229,13 @@ function makeUploads(number) {
         sizeChoice.name = `size${i}`
         sizeChoice.id = `size${i}`
         sizeChoice.innerHTML = `<option value="" selected>-- Choisir --</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      `
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+        `
         const divSizes = document.createElement('div')
         divSizes.classList = 'select-size'
 
@@ -350,25 +246,13 @@ function makeUploads(number) {
 
         sizeChoice.addEventListener('change', e => {
             const size = e.target.value
-            console.log(size);
-            // console.log(e.parentNode)
-            // console.log(e.parentNode)
+            // console.log(size);
 
             makeSizes(e.target.parentNode.childNodes[1], size)
 
         })
-        // const sizeInput = document.createElement('input')
-        // sizeInput.type = 'text'
-        // sizeInput.classList = 'size-input'
-        // sizeInput.name = `size_name${i}`
-        // sizeInput.id = `size_name${i}`
-        // sizeInput.placeholder = 'Taille'
-        // const sizeInput2 = document.createElement('input')
-        // sizeInput2.type = 'text'
-        // sizeInput2.classList = 'size-input'
-        // sizeInput2.name = `size_price${i}`
-        // sizeInput2.id = `size_price${i}`
-        // sizeInput2.placeholder = 'Prix'
+
+        
 
         const br = document.createElement('br')
 
@@ -388,6 +272,8 @@ function makeUploads(number) {
     }
 }
 
+//End of Vetements page
+
 // Notifications
 
 const toasts = document.querySelector('#toasts');
@@ -403,3 +289,60 @@ const createNotification = (message, type) => {
         toast.remove();
     }, 3000);
 };
+
+async function getData(){
+    const response = await fetch(`/get-products?table=${table}`)
+    const data = await response.json()
+    console.log(data)
+    populateData(data)
+}
+
+getData()
+
+function populateData(products){
+    const productInformation  = document.getElementById('product-information')
+    productInformation.innerHTML = ''
+    document.getElementById('Nothingess').style.display = 'none'
+    for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        console.log(product)
+        let div = document.createElement('div')
+        div.classList = 'col-lg-4'
+
+        let img = document.createElement('img')
+        let image = product.Sizes[0].Pictures[0]
+        img.src = image
+        img.classList = 'img-logo'
+        div.appendChild(img)
+        console.error(image)
+
+        let h2 = document.createElement('h2')
+        let product_name = document.createTextNode(product.Name)
+        h2.appendChild(product_name)
+        div.appendChild(h2)
+
+
+        let p = document.createElement('p')
+        let product_description = document.createTextNode(product.Description)
+        p.appendChild(product_description)
+        div.appendChild(p)
+
+        let p2 = document.createElement('p')
+        let Base_price = document.createTextNode(`Prix de base: ${product.Base_price}frs`)
+        p2.appendChild(Base_price)
+        div.appendChild(p2)
+
+        let p3 = document.createElement('p')
+        let a = document.createElement('a')
+        a.href = `${table}/${product.Name}`
+        a.classList = 'btn'
+        a.innerHTML = 'Voire plus &raquo;'
+        p3.appendChild(a)
+        div.appendChild(p3)
+
+
+
+        productInformation.appendChild(div)
+
+    }
+}
